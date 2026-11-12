@@ -11,7 +11,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StatFs;
 import android.provider.Settings;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -25,7 +24,6 @@ import java.io.FileReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -113,6 +111,13 @@ public class MainActivity extends Activity {
                         "Diagnostics refreshed",
                         Toast.LENGTH_SHORT
                 ).show();
+            }
+        });
+
+        addButton("ADVANCED TOOLS", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AdvancedTools.show(MainActivity.this);
             }
         });
 
@@ -206,17 +211,11 @@ public class MainActivity extends Activity {
 
         addSection("ADB DIAGNOSTICS");
 
-        addInfo("ADB daemon state",
-                props.get("init.svc.adbd"));
-
-        addInfo("USB configuration",
-                props.get("sys.usb.config"));
-
+        addInfo("ADB daemon state", props.get("init.svc.adbd"));
+        addInfo("USB configuration", props.get("sys.usb.config"));
         addInfo("Persistent USB configuration",
                 props.get("persist.sys.usb.config"));
-
-        addInfo("ADB TCP port",
-                props.get("service.adb.tcp.port"));
+        addInfo("ADB TCP port", props.get("service.adb.tcp.port"));
 
         addInfo("ADB connection",
                 "The phone cannot reliably determine whether a computer is connected.");
@@ -248,11 +247,8 @@ public class MainActivity extends Activity {
 
         addSection("PARTITIONS");
 
-        addInfo("Partition layout",
-                readPartitions());
-
-        addInfo("Mount information",
-                readMounts());
+        addInfo("Partition layout", readPartitions());
+        addInfo("Mount information", readMounts());
 
         addSection("DIAGNOSTIC REPORT");
 
@@ -329,18 +325,9 @@ public class MainActivity extends Activity {
     }
 
     private int getReadinessColor() {
-        if ("POSSIBLE".equals(readiness)) {
-            return 0xFF70D69A;
-        }
-
-        if ("RESTRICTED".equals(readiness)) {
-            return 0xFFFFC078;
-        }
-
-        if ("UNLOCKED".equals(readiness)) {
-            return 0xFF70B7FF;
-        }
-
+        if ("POSSIBLE".equals(readiness)) return 0xFF70D69A;
+        if ("RESTRICTED".equals(readiness)) return 0xFFFFC078;
+        if ("UNLOCKED".equals(readiness)) return 0xFF70B7FF;
         return 0xFFE6EAF0;
     }
 
@@ -359,14 +346,8 @@ public class MainActivity extends Activity {
     private String getOemUnlockSetting() {
         int value = readGlobalUnlockSetting();
 
-        if (value == 1) {
-            return "enabled (1)";
-        }
-
-        if (value == 0) {
-            return "disabled (0)";
-        }
-
+        if (value == 1) return "enabled (1)";
+        if (value == 0) return "disabled (0)";
         return "not exposed / unknown";
     }
 
@@ -395,7 +376,6 @@ public class MainActivity extends Activity {
             );
 
             String value = reader.readLine();
-
             reader.close();
             process.waitFor();
 
@@ -412,7 +392,6 @@ public class MainActivity extends Activity {
 
     private String readCpuInfo() {
         StringBuilder result = new StringBuilder();
-
         BufferedReader reader = null;
 
         try {
@@ -431,16 +410,12 @@ public class MainActivity extends Activity {
                         || lower.startsWith("processor")
                         || lower.startsWith("cpu architecture")) {
 
-                    if (result.length() > 0) {
-                        result.append('\n');
-                    }
+                    if (result.length() > 0) result.append('\n');
 
                     result.append(line.trim());
                     count++;
 
-                    if (count >= 8) {
-                        break;
-                    }
+                    if (count >= 8) break;
                 }
             }
 
@@ -513,17 +488,11 @@ public class MainActivity extends Activity {
                     continue;
                 }
 
-                if (result.length() > 0
-                        && count > 1
-                        && count < 45) {
-                    result.append('\n');
-                }
-
-                result.append(line);
+                result.append(line).append('\n');
                 count++;
 
                 if (count >= 45) {
-                    result.append("\n... output truncated");
+                    result.append("... output truncated");
                     break;
                 }
             }
@@ -558,9 +527,7 @@ public class MainActivity extends Activity {
                         || line.contains("/vendor")
                         || line.contains("/product")) {
 
-                    if (result.length() > 0) {
-                        result.append('\n');
-                    }
+                    if (result.length() > 0) result.append('\n');
 
                     result.append(line);
                     count++;
@@ -606,8 +573,13 @@ public class MainActivity extends Activity {
         out.append("Hardware: ").append(Build.HARDWARE).append('\n');
         out.append("Board: ").append(Build.BOARD).append('\n');
         out.append("Bootloader: ").append(unknown(Build.BOOTLOADER)).append('\n');
-        out.append("Android: ").append(Build.VERSION.RELEASE)
-                .append(" (API ").append(Build.VERSION.SDK_INT).append(")\n");
+
+        out.append("Android: ")
+                .append(Build.VERSION.RELEASE)
+                .append(" (API ")
+                .append(Build.VERSION.SDK_INT)
+                .append(")\n");
+
         out.append("Build display: ").append(Build.DISPLAY).append('\n');
         out.append("Build ID: ").append(Build.ID).append('\n');
         out.append("Fingerprint: ").append(Build.FINGERPRINT).append('\n');
@@ -626,7 +598,6 @@ public class MainActivity extends Activity {
         out.append("Storage: ").append(getStorageInfo()).append('\n');
 
         out.append("\n[BOOT MODE]\n");
-
         appendProperty(out, "ro.bootmode");
         appendProperty(out, "ro.boot.bootreason");
         appendProperty(out, "ro.boot.slot_suffix");
@@ -688,6 +659,7 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.setType("text/plain");
+
         intent.putExtra(
                 Intent.EXTRA_TITLE,
                 "OpenDeepTesting-1.0.0-report.txt"
@@ -772,6 +744,7 @@ public class MainActivity extends Activity {
         view.setTextSize(14);
         view.setPadding(dp(14), dp(12), dp(14), dp(12));
         view.setBackgroundColor(0xFF1B222C);
+
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -816,10 +789,7 @@ public class MainActivity extends Activity {
         StringBuilder result = new StringBuilder();
 
         for (String value : values) {
-            if (result.length() > 0) {
-                result.append(", ");
-            }
-
+            if (result.length() > 0) result.append(", ");
             result.append(value);
         }
 
